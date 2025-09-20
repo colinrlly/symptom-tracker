@@ -1,32 +1,29 @@
-import { EntryForm } from "@/components/EntryForm";
+import { EntryFormEnhanced as EntryForm } from "@/components/EntryFormEnhanced";
+import { Layout } from "@/components/Layout";
+import { PageHeader } from "@/components/PageHeader";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-base-200">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-base-content mb-2">
-              Symptom Tracker
-            </h1>
-            <p className="text-lg text-base-content/70">
-              Track your symptoms, foods, and medications with ease
-            </p>
+    <Layout>
+      <div className="max-w-5xl mx-auto">
+        <PageHeader
+          title="New Entry"
+          description="Log your symptoms, foods, medications, and other health data"
+          icon="✏️"
+        >
+          <Link href="/timeline" className="btn btn-outline gap-2">
+            📈 View Timeline
+          </Link>
+          <Link href="/field-types" className="btn btn-outline gap-2">
+            ⚙️ Manage Fields
+          </Link>
+        </PageHeader>
 
-            <div className="flex justify-center gap-4 mt-4">
-              <Link href="/field-types" className="btn btn-outline">
-                📊 Manage Fields
-              </Link>
-              <Link href="/timeline" className="btn btn-outline">
-                📈 View Timeline
-              </Link>
-            </div>
-          </div>
-
+        <div className="animate-fade-in">
           <EntryForm />
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }

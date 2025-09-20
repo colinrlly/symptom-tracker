@@ -1,29 +1,33 @@
-import { FieldTypesManager } from "@/components/FieldTypesManager";
+import { FieldTypesManagerEnhanced as FieldTypesManager } from "@/components/FieldTypesManagerEnhanced";
+import { Layout } from "@/components/Layout";
+import { PageHeader } from "@/components/PageHeader";
 import Link from "next/link";
 
 export default function FieldTypesPage() {
   return (
-    <div className="min-h-screen bg-base-200">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-4xl font-bold text-base-content mb-2">
-                Field Types
-              </h1>
-              <p className="text-lg text-base-content/70">
-                Manage the fields you track over time
-              </p>
-            </div>
+    <Layout>
+      <div className="max-w-6xl mx-auto">
+        <PageHeader
+          title="Manage Fields"
+          description="Organize and categorize the fields you track over time"
+          icon="⚙️"
+          breadcrumbs={[
+            { name: "Home", href: "/" },
+            { name: "Manage Fields" }
+          ]}
+        >
+          <Link href="/timeline" className="btn btn-outline gap-2">
+            📈 View Timeline
+          </Link>
+          <Link href="/" className="btn btn-primary gap-2">
+            ✏️ New Entry
+          </Link>
+        </PageHeader>
 
-            <Link href="/" className="btn btn-primary">
-              ← Back to Entry
-            </Link>
-          </div>
-
+        <div className="animate-fade-in">
           <FieldTypesManager />
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
