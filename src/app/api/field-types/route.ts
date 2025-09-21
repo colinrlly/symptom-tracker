@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, fieldTypes } from "@/lib/db";
-import { eq, desc } from "drizzle-orm";
+import { getDb, fieldTypes } from "@/lib/db";
+import { eq, desc, and } from "drizzle-orm";
 
 // For now, we'll use a hardcoded user ID since we don't have auth yet
 const DEFAULT_USER_ID = "123e4567-e89b-12d3-a456-426614174000";
@@ -11,31 +11,55 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "usage"; // usage, name, created
     const category = searchParams.get("category"); // optional filter
 
-    let query = db
-      .select()
-      .from(fieldTypes)
-      .where(eq(fieldTypes.userId, DEFAULT_USER_ID));
+    type CategoryOption = "boolean" | "scale_1_10" | "severity" | "number" | "text" | "duration" extends never
+      ? never
+      : "symptom" | "food" | "medication" | "context" | "other";
 
-    // Add category filter if specified
-    if (category && category !== "all") {
-      query = query.where(eq(fieldTypes.category, category));
+    const allowedCategories: readonly CategoryOption[] = [
+      "symptom",
+      "food",
+      "medication",
+      "context",
+      "other",
+    ] as const;
+
+    const isCategory = (value: unknown): value is CategoryOption =>
+      typeof value === "string" && (allowedCategories as readonly string[]).includes(value);
+
+    const conditions = [eq(fieldTypes.userId, DEFAULT_USER_ID)];
+    if (category && category !== "all" && isCategory(category)) {
+      conditions.push(eq(fieldTypes.category, category));
     }
 
+    const whereExpr = and(...conditions);
+
     // Add sorting
+    const db = getDb();
+    let userFieldTypes;
     switch (sortBy) {
       case "name":
-        query = query.orderBy(fieldTypes.name);
+        userFieldTypes = await db
+          .select()
+          .from(fieldTypes)
+          .where(whereExpr)
+          .orderBy(fieldTypes.name);
         break;
       case "created":
-        query = query.orderBy(desc(fieldTypes.createdAt));
+        userFieldTypes = await db
+          .select()
+          .from(fieldTypes)
+          .where(whereExpr)
+          .orderBy(desc(fieldTypes.createdAt));
         break;
       case "usage":
       default:
-        query = query.orderBy(desc(fieldTypes.usageCount), fieldTypes.name);
+        userFieldTypes = await db
+          .select()
+          .from(fieldTypes)
+          .where(whereExpr)
+          .orderBy(desc(fieldTypes.usageCount), fieldTypes.name);
         break;
     }
-
-    const userFieldTypes = await query;
 
     return NextResponse.json({ fieldTypes: userFieldTypes });
   } catch (error) {
@@ -49,6 +73,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const db = getDb();
     const { id, name, category } = await request.json();
 
     if (!id) {
@@ -87,6 +112,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const db = getDb();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
