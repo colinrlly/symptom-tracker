@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "neon": {
+      "url": "https://mcp.neon.tech"
+    },
+    "vercel": {
+      "url": "https://mcp.vercel.com"
+    }
+  }
+}
