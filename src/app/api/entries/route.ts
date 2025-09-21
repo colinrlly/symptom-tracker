@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, entries, fieldTypes, fieldValues } from "@/lib/db";
+import { getDb, entries, fieldTypes, fieldValues } from "@/lib/db";
 import { eq, and } from "drizzle-orm";
 
 // For now, we'll use a hardcoded user ID since we don't have auth yet
@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the entry
+    const db = getDb();
     const [newEntry] = await db
       .insert(entries)
       .values({
@@ -121,7 +122,8 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // Get entries with their field values
-    const userEntries = await db
+    const db2 = getDb();
+    const userEntries = await db2
       .select({
         id: entries.id,
         occurredAt: entries.occurredAt,
@@ -140,7 +142,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ entries: [] });
     }
 
-    const values = await db
+    const values = await db2
       .select({
         entryId: fieldValues.entryId,
         fieldName: fieldTypes.name,
